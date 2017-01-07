@@ -183,6 +183,14 @@ class Supplier extends Person {
 }
 
 
+class Distributor extends Person {
+    public function __construct(&$DB) {
+        Table::__construct($DB);
+        $this->table = 'distributor';
+    }
+}
+
+
 class Margin extends Table {
     public function __construct(&$DB) {
         Table::__construct($DB);
@@ -616,7 +624,7 @@ class Production extends Table {
     public function selectByProductId($product_id) {
         return $this->DB->select($table, '*', ['product_id' => $product_id]);
     }
-    //TODO
+    
     public function insert(&$product, $product_id, &$work_type, $work_type_id, $spend_time) {
         if (!$this->canInsert($product, $product_id, $work_type, $work_type_id, $spend_time)) {
             return false;
@@ -629,7 +637,7 @@ class Production extends Table {
         ];
         $this->DB->insert($table, $insert);
     }
-    //TODO
+    
     public function update($id, &$product, $product_id, &$work_type, $work_type_id, $spend_time) {
         if (!$this->canInsert($product, $product_id, $work_type, $work_type_id, $spend_time)) {
             return false;
@@ -646,6 +654,59 @@ class Production extends Table {
         return $product->hasId($product_id)
             && $work_type->hasId($work_type_id)
             && $spend_time >= 0;
+    }
+}
+
+
+/**
+ * id int
+ * product_id int
+ * distributor_id int
+ * margin float(2, 2)
+ */
+class Distribution extends Table {
+    public function __construct() {
+        Table::__construct();
+        $this->table = 'distribution';
+    }
+    
+    public function selectByDistributorId($distributor_id) {
+        return $this->DB->select($table, '*', ['distributor_id' => $distributor_id]);
+    }
+    
+    public function selectByProductId($product_id) {
+        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+    }
+    
+    public function insert(&$product, $product_id, &$distributor, $distributor_id, $margin) {
+        if (!$this->canInsert($product, $product_id, $distributor, $distributor_id, $margin)) {
+            return false;
+        }
+        $insert = [
+            'id' => null,
+            'product_id' => $product_id,
+            'distributor_id' => $distributor_id,
+            'margin' => $margin
+        ];
+        $this->DB->insert($table, $insert);
+    }
+    
+    public function update($id, &$product, $product_id, &$distributor, $distributor_id, $margin) {
+        if (!$this->canInsert($product, $product_id, $distributor, $distributor_id, $margin)) {
+            return false;
+        }
+        $insert = [
+            'product_id' => $product_id,
+            'distributor_id' => $distributor_id,
+            'margin' => $margin
+        ];
+        $this->DB->update($table, $insert, ['id' => $id]);
+    }
+    
+    protected function canInsert(&$product, $product_id, &$distributor, $distributor_id, $margin) {
+        return $product->hasId($product_id)
+            && $work_type->hasId($work_type_id)
+            && $margin >= 0;
     }
 }
 
