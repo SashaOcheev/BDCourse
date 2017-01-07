@@ -40,17 +40,16 @@ abstract class Table {
 }
 
 
-class Product extends Table {
-    public function __construct() {
-        Table::__construct();
-        $this->table = 'product';
-    }
+class OnlyTitle extends Table {
     
     public function insert($title) {
         if (!$this->canInsert($title)) {
             return false;
         }
-        $insert = ['title' => $title];
+        $insert = [
+            'id' => null,
+            'title' => $title
+        ];
         return $this->DB->insert($table, $insert);
     }
     
@@ -68,32 +67,21 @@ class Product extends Table {
 }
 
 
-class Raw extends Table {
+class Product extends OnlyTitle {
     public function __construct() {
-        Table::__construct();
-        $this->table = 'raw';
-    }
-    
-    public function insert($title) {
-        if (!$this->canInsert($title)) {
-            return false;
-        }
-        $insert = ['title' => $title];
-        return $this->DB->insert($table, $insert);
-    }
-    
-    public function update($id, $title) {
-        if (!$this->canInsert($title)) {
-            return false;
-        }
-        $insert = ['title' => $title];
-        return $this->DB->insert($table, $insert, ['id' => $id]);
-    }  
-    
-    protected function canInsert($title) {
-        return (!empty($title));
+        OnlyTitle::__construct();
+        $this->table = 'product';
     }   
 }
+
+
+class Raw extends OnlyTitle {
+    public function __construct() {
+        OnlyTitle::__construct();
+        $this->table = 'raw';
+    }
+}
+
 
 class WorkType extends Table {
     public function __construct() {
@@ -105,7 +93,10 @@ class WorkType extends Table {
         if (!$this->canInsert($title, $employee_rate)) {
             return false;
         }
-        $insert = ['title' => $title];
+        $insert = [
+            'id' => null,
+            'title' => $title
+        ];
         return $this->DB->insert($table, $insert);
     }
     
@@ -120,6 +111,63 @@ class WorkType extends Table {
     protected function canInsert($title, $employee_rate) {
         return !empty($title) && !empty($employee_rate) && $employee_rate > 0;
     }    
+}
+
+
+class Person extends Table {
+  
+    public function insert($title, $fullname, $phone, $email) {
+        if (!$this->canInsert($title, $fullname, $phone, $email)) {
+            return false;
+        }
+        $insert = [
+            'id' => null,
+            'title' => $title,
+            'fullname' => $fullname,
+            'phone' => $phone,
+            'email' => $email    
+        ];
+        return $this->DB->insert($table, $insert);
+    }
+    
+    public function update($id, $title, $fullname, $phone, $email) {
+        if (!$this->canInsert($title, $fullname, $phone, $email)) {
+            return false;
+        }
+        $insert = [
+            'title' => $title,
+            'fullname' => $fullname,
+            'phone' => $phone,
+            'email' => $email    
+        ];
+        return $this->DB->insert($table, $insert, ['id' => $id]);
+    }
+    
+    protected function canInsert($title, $fullname, $phone, $email) {
+        if ($title == '' || $fullname == '' || $email == '' || $phone <= 0) {
+            return false;
+        }
+        if (empty($title) || empty($fullname) && empty($phone) || empty($email)) {
+            return false;
+        } 
+        return true;
+    }
+}  
+ 
+ 
+class Client extends Person {
+    public function __construct() {
+        Table::__construct();
+        $this->table = 'Client';
+    }
+}
+
+
+class Supplier extends Person {
+    public function __construct() {
+        Table::__construct();
+        $this->table = 'Supplier';
+    }
 }
 
 
