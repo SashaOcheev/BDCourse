@@ -394,4 +394,57 @@ class Supplies extends Table {
 }
 
 
+/**
+ * id int
+ * prodict_id int
+ * raw_id int
+ * quantity float(10, 2)
+ */
+class ProductRaw extends Table {
+
+    public function __construct() {
+        Table::__construct();
+        $this->table = 'product_raw';
+    }
+    
+    public function selectByRawId($raw_id) {
+        return $this->DB->select($table, '*', ['raw_id' => $raw_id]);
+    }
+    
+    public function selectByProductId($product) {
+        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+    }
+    
+    public function insert(&$raw, $raw_id, &$supplier, $supplier_id, $price) {
+        if (!$this->canInsert($product, $product_id, $raw, $raw_id, $quantity)) {
+            return false;
+        }
+        $insert = [
+            'id' => null,
+            'product_id' => $product_id,
+            'raw_id' => $raw_id,
+            'quantity' => $quantity
+        ];
+        $this->DB->insert($table, $insert);
+    }
+    
+    public function update($id, &$product, $product_id, &$raw, $raw_id, $quantity) {
+        if (!$this->canInsert($product, $product_id, $raw, $raw_id, $quantity)) {
+            return false;
+        }
+        $insert = [
+            'product_id' => $product_id,
+            'raw_id' => $raw_id,
+            'quantity' => $quantity
+        ];
+        $this->DB->update($table, $insert, ['id' => $id]);
+    }
+    
+    protected function canInsert(&$product, $product_id, &$raw, $raw_id, $quantity) {
+        return $raw->hasId($raw_id)
+            && $product->hasId($product_id)
+            && $quantity > 0;
+    }
+}
+
 
