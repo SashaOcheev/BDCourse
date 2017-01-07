@@ -12,27 +12,8 @@ class DB {
         	'username' => $db_username,
         	'password' => $db_password,
             'charset' => 'utf8']);
-            
-        $this->setDiscountEditionLevels();
-        $this->setClientStatuses();
-        $this->setDiscountLevels();
     }
-    
-    protected function setDiscountEditionLevels() {
-        $this->edition_discount_levels = $this->DB->select('edition_discount_info', '*');
-        $this->edition_discount_levels = uasort($this->edition_discount_levels, $this->getUasortFunc('top'));
-    }
-    
-    protected function setClientStatuses() {
-        $this->client_statuses = $this->DB->select('client_status', '*');
-        $this->client_statuses = uasort($this->client_statuses, $this->getUasortFunc('id'));
-    }
-    
-    protected function setDiscountLevels() {
-        $this->discount_levels = $this->DB->select('discount_levels', '*');
-        $this->discount_levels = uasort($this->discount_levels, $this->getUasortFunc('id'));
-    }
-    
+      
     protected function getUasortFunc($field) {
         return function($val1, $val2) {
                 if ($val1[$field] == $val2[$field]) {
@@ -43,13 +24,10 @@ class DB {
     }
     
     protected $DB;
-    protected $edition_discount_levels; //array('id' => int, 'bottom' => int, 'top' => int)
-    protected $client_statuses; //array('id' => int, 'status' => string)
-    protected $discount_levels; //array('id' => int)
 }
 
 
-abstract class Table {
+abstract class UnchangeableTable {
     public function __construct(&$DB) {
         $this->DB =& $DB;
     }
@@ -61,13 +39,16 @@ abstract class Table {
     public function hasId($id) {
         return $this->DB->has($table, ['id' => $id]);
     }
-    
+        
+    protected $DB;
+    protected $table;
+}
+
+
+abstract class Table extends UnchangeableTable{
     public function delete($id) {
         return $this->DB->delete($table, ['id' => $id]);
     }
-    
-    protected $DB;
-    protected $table;
 }
 
 
@@ -107,16 +88,16 @@ class Product extends OnlyTitle {
 
 
 class Raw extends OnlyTitle {
-    public function __construct() {
-        OnlyTitle::__construct();
+    public function __construct(&$DB) {
+        OnlyTitle::__construct($DB);
         $this->table = 'raw';
     }
 }
 
 
 class WorkType extends Table {
-    public function __construct() {
-        Table::__construct();
+    public function __construct(&$DB) {
+        Table::__construct($DB);
         $this->table = 'work_type';
     }
     
@@ -145,7 +126,7 @@ class WorkType extends Table {
 }
 
 
-class Person extends Table {
+abstract class Person extends Table {
   
     public function insert($title, $fullname, $phone, $email) {
         if (!$this->canInsert($title, $fullname, $phone, $email)) {
@@ -187,24 +168,24 @@ class Person extends Table {
  
  
 class Client extends Person {
-    public function __construct() {
-        Table::__construct();
+    public function __construct(&$DB) {
+        Table::__construct($DB);
         $this->table = 'client';
     }
 }
 
 
 class Supplier extends Person {
-    public function __construct() {
-        Table::__construct();
+    public function __construct(&$DB) {
+        Table::__construct($DB);
         $this->table = 'supplier';
     }
 }
 
 
 class Margin extends Table {
-    public function __construct() {
-        Table::__construct();
+    public function __construct(&$DB) {
+        Table::__construct($DB);
         $this->table = 'margin';
     }
     
@@ -242,8 +223,8 @@ class Margin extends Table {
 
 
 class ActionTime extends Table {
-    public function __construct() {
-        Table::__construct();
+    public function __construct(&$DB) {
+        Table::__construct($DB);
         $this->table = 'action_time';
     }
 
@@ -290,10 +271,9 @@ class ActionTime extends Table {
  * edition int
  */
 class Orders extends Table {
-    public function __construct(&$edition_discount_levels) {
-        Table::__construct();
+    public function __construct(&$DB) {
+        Table::__construct($DB);
         $this->table = 'orders';
-        $this->edition_discount_levels =& $edition_discount_levels;
     }
     
     public function selectByProductId($product_id) {
@@ -304,8 +284,8 @@ class Orders extends Table {
         return $this->DB->select($table, '*', ['client_id' => $client_id]);
     }
     
-    public function insert(&$product, $product_id, &$client, $client_id, $edition) {
-        if (!$this->canInsert($product, $product_id, $client, $client_id, $edition)) {
+    public function insert(&$product, $product_id, &$client, $client_id, &$edition_discount_info, $edition) {
+        if (!$this->canInsert($product, $product_id, $client, $client_id, $edition_discount_info, $edition)) {
             return false;
         }
         $insert = [
@@ -317,8 +297,8 @@ class Orders extends Table {
         $this->DB->insert($table, $insert);
     }
     
-    public function update($id, &$product, $product_id, &$client, $client_id, $edition) {
-        if (!$this->canInsert($product, $product_id, $client, $client_id, $edition)) {
+    public function update($id, &$product, $product_id, &$client, $client_id, &$edition_discount_info, $edition) {
+        if (!$this->canInsert($product, $product_id, $client, $client_id, $edition_discount_info, $edition)) {
             return false;
         }
         $insert = [
@@ -329,14 +309,13 @@ class Orders extends Table {
         $this->DB->update($table, $insert, ['id' => $id]);
     }
     
-    protected function canInsert(&$product, $product_id, &$client, $client_id, $edition) {
+    protected function canInsert(&$product, $product_id, &$client, $client_id, &$edition_discount_info, $edition) {
+        $edition_discount_levels = $edition_discount_info->select();
         return $product->hasId($product_id)
             && $client->hasId($client_id)
             && $edition >= $this->edition_discount_levels[0]['top']
             && $edition <= end($this->edition_discount_levels)['bottom'];
     }
-    
-    protected $edition_discount_levels;
 }
 
 
@@ -348,8 +327,8 @@ class Orders extends Table {
  */
 class Supplies extends Table {
     
-    public function __construct() {
-        Table::__construct();
+    public function __construct(&$DB) {
+        Table::__construct($DB);
         $this->table = 'supplies';
     }
 
@@ -402,8 +381,8 @@ class Supplies extends Table {
  */
 class ProductRaw extends Table {
 
-    public function __construct() {
-        Table::__construct();
+    public function __construct(&$DB) {
+        Table::__construct($DB);
         $this->table = 'product_raw';
     }
     
@@ -447,4 +426,226 @@ class ProductRaw extends Table {
     }
 }
 
+
+class ClientStatus extends UnchangeableTable {
+    public function __construct(&$DB) {
+        UnchangeableTable::__construct($DB);
+        $this->table = 'client_status';    
+    }
+}
+
+
+class EditionDiscountInfo extends UnchangeableTable {
+    public function __construct(&$DB) {
+        UnchangeableTable::__construct($DB);
+        $this->table = 'edition_discount_info';    
+    }
+}
+
+
+class DiscountLevel extends UnchangeableTable {
+    public function __construct(&$DB) {
+        UnchangeableTable::__construct($DB);
+        $this->table = 'discount_level';    
+    }
+}
+
+/**
+ * id int
+ * client_id int
+ * client_status_id int
+ */
+class ClientCard extends Table {
+    public function __construct() {
+        Table::__construct();
+        $this->table = 'client_card';
+    }
+    
+    public function selectByClientId($client_id) {
+        return $this->DB->select($table, '*', ['client_id' => $client_id]);
+    }
+    
+    public function selectByClientStatusId($client_status_id) {
+        return $this->DB->select($table, '*', ['client_status_id' => $client_status_id]);
+    }
+    
+    public function insert(&$client, $client_id, &$client_status, $client_status_id) {
+        if (!$this->canInsert($client, $client_id, $client_status, $client_status_id)) {
+            return false;
+        }
+        $insert = [
+            'id' => null,
+            'client_id' => $client_id,
+            'client_status_id' => $client_status_id,
+        ];
+        $this->DB->insert($table, $insert);
+    }
+    
+    public function update($id, &$client, $client_id, &$client_status, $client_status_id) {
+        if (!$this->canInsert($client, $client_id, $client_status, $client_status_id)) {
+            return false;
+        }
+        $insert = [
+            'client_id' => $client_id,
+            'client_status_id' => $client_status_id,
+        ];
+        $this->DB->update($table, $insert, ['id' => $id]);
+    }
+    
+    protected function canInsert(&$client, $client_id, &$client_status, $client_status_id) {
+        return $client->hasId($client_id)
+            && $client_status->hasId($client_status_id);
+    }
+}
+
+
+/**
+ * id int
+ * product_id int
+ * discount_level_id int
+ */
+class Discount extends Table {
+    public function __construct() {
+        Table::__construct();
+        $this->table = 'discount';
+    }
+    
+    public function selectByDiscountLevelId($discount_level_id) {
+        return $this->DB->select($table, '*', ['discount_level_id' => $discount_level_id]);
+    }
+    
+    public function selectByProductId($product_id) {
+        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+    }
+    
+    public function insert(&$product, $product_id, &$discount_level, $discount_level_id) {
+        if (!$this->canInsert($product, $product_id, $discount_level, $discount_level_id)) {
+            return false;
+        }
+        $insert = [
+            'id' => null,
+            'product_id' => $product_id,
+            'discount_level_id' => $discount_level_id,
+        ];
+        $this->DB->insert($table, $insert);
+    }
+    
+    public function update($id, &$product, $product_id, &$discount_level, $discount_level_id) {
+        if (!$this->canInsert($product, $product_id, $discount_level, $discount_level_id)) {
+            return false;
+        }
+        $insert = [
+            'product_id' => $product_id,
+            'discount_level_id' => $discount_level_id,
+        ];
+        $this->DB->update($table, $insert, ['id' => $id]);
+    }
+    
+    protected function canInsert(&$product, $product_id, &$discount_level, $discount_level_id) {
+        return $product->hasId($product_id)
+            && $discount_level->hasId($discount_level_id);
+    }
+}
+
+
+/**
+ * id int
+ * product_id int
+ * edition_discount_info_id int
+ */
+class EditionDiscount extends Table {
+    public function __construct() {
+        Table::__construct();
+        $this->table = 'edition_discount';
+    }
+    
+    public function selectByEditionDiscountInfoId($edition_discount_info_id) {
+        return $this->DB->select($table, '*', ['edition_discount_info_id' => $edition_discount_info_id]);
+    }
+    
+    public function selectByProductId($product_id) {
+        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+    }
+    
+    public function insert(&$product, $product_id, &$edition_discount_info, $edition_discount_info_id) {
+        if (!$this->canInsert($product, $product_id, $edition_discount_info, $edition_discount_info_id)) {
+            return false;
+        }
+        $insert = [
+            'id' => null,
+            'product_id' => $product_id,
+            'edition_discount_info_id' => $edition_discount_info_id,
+        ];
+        $this->DB->insert($table, $insert);
+    }
+    
+    public function update($id, &$product, $product_id, &$edition_discount_info, $edition_discount_info_id) {
+        if (!$this->canInsert($product, $product_id, $edition_discount_info, $edition_discount_info_id)) {
+            return false;
+        }
+        $insert = [
+            'product_id' => $product_id,
+            'edition_discount_info_id' => $edition_discount_info_id,
+        ];
+        $this->DB->update($table, $insert, ['id' => $id]);
+    }
+    
+    protected function canInsert(&$product, $product_id, &$edition_discount_info, $edition_discount_info_id) {
+        return $product->hasId($product_id)
+            && $edition_discount_info->hasId($edition_discount_info_id);
+    }
+}
+
+
+/**
+ * id int
+ * product_id int
+ * work_type_id int
+ * spend_time
+ */
+class Production extends Table {
+    public function __construct() {
+        Table::__construct();
+        $this->table = 'production';
+    }
+    
+    public function selectByWorkTypeId($work_type_id) {
+        return $this->DB->select($table, '*', ['work_type_id' => $work_type_id]);
+    }
+    
+    public function selectByProductId($product_id) {
+        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+    }
+    //TODO
+    public function insert(&$product, $product_id, &$work_type, $work_type_id, $spend_time) {
+        if (!$this->canInsert($product, $product_id, $work_type, $work_type_id, $spend_time)) {
+            return false;
+        }
+        $insert = [
+            'id' => null,
+            'product_id' => $product_id,
+            'work_type_id' => $work_type_id,
+            'spend_time' => $spend_time
+        ];
+        $this->DB->insert($table, $insert);
+    }
+    //TODO
+    public function update($id, &$product, $product_id, &$work_type, $work_type_id, $spend_time) {
+        if (!$this->canInsert($product, $product_id, $work_type, $work_type_id, $spend_time)) {
+            return false;
+        }
+        $insert = [
+            'product_id' => $product_id,
+            'work_type_id' => $work_type_id,
+            'spend_time' => $spend_time
+        ];
+        $this->DB->update($table, $insert, ['id' => $id]);
+    }
+    
+    protected function canInsert(&$product, $product_id, &$work_type, $work_type_id, $spend_time) {
+        return $product->hasId($product_id)
+            && $work_type->hasId($work_type_id)
+            && $spend_time >= 0;
+    }
+}
 
