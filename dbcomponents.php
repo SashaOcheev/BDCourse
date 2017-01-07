@@ -47,12 +47,8 @@ class OnlyTitle extends Table {
     }
     
     protected function canInsert($title) {
-        return (!empty($title) && !$this->hasTitle($title));
+        return !empty($title);
     }    
-    
-    protected function hasTitle($title) {
-        return $this->DB->has($this->table, ['title' => $title]);
-    }
 }
 
 
