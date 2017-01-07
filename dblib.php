@@ -39,6 +39,14 @@ class Press {
         $this->work_type = new WorkType($this->DB);
     }
     
+    public function getAllProducts() {
+        return $this->product->select();
+    }
+    
+    public function addProduct($title) {
+        return $this->product->insert($title);
+    }
+    
     protected $DB;
     
     protected $action_time;

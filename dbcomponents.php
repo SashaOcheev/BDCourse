@@ -6,11 +6,11 @@ abstract class UnchangeableTable {
     }
     
     public function select() {
-        return $this->DB->select($table, '*');
+        return $this->DB->select($this->table, '*');
     }
     
     public function hasId($id) {
-        return $this->DB->has($table, ['id' => $id]);
+        return $this->DB->has($this->table, ['id' => $id]);
     }
         
     protected $DB;
@@ -20,7 +20,7 @@ abstract class UnchangeableTable {
 
 abstract class Table extends UnchangeableTable{
     public function delete($id) {
-        return $this->DB->delete($table, ['id' => $id]);
+        return $this->DB->delete($this->table, ['id' => $id]);
     }
 }
 
@@ -35,7 +35,7 @@ class OnlyTitle extends Table {
             'id' => null,
             'title' => $title
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, $title) {
@@ -43,12 +43,16 @@ class OnlyTitle extends Table {
             return false;
         }
         $insert = ['title' => $title];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert($title) {
-        return (!empty($title));
+        return (!empty($title) && !$this->hasTitle($title));
     }    
+    
+    protected function hasTitle($title) {
+        return $this->DB->has($this->table, ['title' => $title]);
+    }
 }
 
 
@@ -82,7 +86,7 @@ class WorkType extends Table {
             'id' => null,
             'title' => $title
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, $title, $employee_rate) {
@@ -90,7 +94,7 @@ class WorkType extends Table {
             return false;
         }
         $insert = ['title' => $title];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert($title, $employee_rate) {
@@ -112,7 +116,7 @@ abstract class Person extends Table {
             'phone' => $phone,
             'email' => $email    
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, $title, $fullname, $phone, $email) {
@@ -125,7 +129,7 @@ abstract class Person extends Table {
             'phone' => $phone,
             'email' => $email    
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert($title, $fullname, $phone, $email) {
@@ -171,7 +175,7 @@ class Margin extends Table {
     }
     
     public function selectByProductId($product_id) {
-        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+        return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
     public function insert(&$product, $product_id, $self) {
@@ -183,7 +187,7 @@ class Margin extends Table {
             'product_id' => $product_id,
             'self' => $self
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, &$product, $produc_id, $self) {
@@ -194,7 +198,7 @@ class Margin extends Table {
             'product_id' => $product_id,
             'self' => $self
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert(&$product, $product_id, $self) {
@@ -210,7 +214,7 @@ class ActionTime extends Table {
     }
 
     public function selectByProductId($product_id) {
-        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+        return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
 
     public function insert(&$product, $product_id, $start_time, $end_time) {
@@ -223,7 +227,7 @@ class ActionTime extends Table {
             'start_time' => $start_time,
             'end_time' => $end_time
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
 
     public function update($id, &$product, $produc_id, $start_time, $end_time) {
@@ -235,7 +239,7 @@ class ActionTime extends Table {
             'start_time' => $start_time,
             'end_time' => $end_time
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     //time date('Y-m-d')
@@ -258,11 +262,11 @@ class Orders extends Table {
     }
     
     public function selectByProductId($product_id) {
-        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+        return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
     public function selectByClientId($client_id) {
-        return $this->DB->select($table, '*', ['client_id' => $client_id]);
+        return $this->DB->select($this->table, '*', ['client_id' => $client_id]);
     }
     
     public function insert(&$product, $product_id, &$client, $client_id, &$edition_discount_info, $edition) {
@@ -275,7 +279,7 @@ class Orders extends Table {
             'client_id' => $client_id,
             'edition' => $edition
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, &$product, $product_id, &$client, $client_id, &$edition_discount_info, $edition) {
@@ -287,7 +291,7 @@ class Orders extends Table {
             'client_id' => $client_id,
             'edition' => $edition
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert(&$product, $product_id, &$client, $client_id, &$edition_discount_info, $edition) {
@@ -314,11 +318,11 @@ class Supplies extends Table {
     }
 
     public function selectByRawId($raw_id) {
-        return $this->DB->select($table, '*', ['raw_id' => $raw_id]);
+        return $this->DB->select($this->table, '*', ['raw_id' => $raw_id]);
     }
     
     public function selectByClientId($supplier) {
-        return $this->DB->select($table, '*', ['supplier_id' => $supplier_id]);
+        return $this->DB->select($this->table, '*', ['supplier_id' => $supplier_id]);
     }
     
     public function insert(&$raw, $raw_id, &$supplier, $supplier_id, $price) {
@@ -331,7 +335,7 @@ class Supplies extends Table {
             'supplier_id' => $supplier_id,
             'price' => $price
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, &$product, $product_id, &$client, $client_id, $edition) {
@@ -343,7 +347,7 @@ class Supplies extends Table {
             'supplier_id' => $supplier_id,
             'price' => $price
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert(&$raw, $raw_id, &$supplier, $supplier_id, $price) {
@@ -368,11 +372,11 @@ class ProductRaw extends Table {
     }
     
     public function selectByRawId($raw_id) {
-        return $this->DB->select($table, '*', ['raw_id' => $raw_id]);
+        return $this->DB->select($this->table, '*', ['raw_id' => $raw_id]);
     }
     
     public function selectByProductId($product) {
-        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+        return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
     public function insert(&$raw, $raw_id, &$supplier, $supplier_id, $price) {
@@ -385,7 +389,7 @@ class ProductRaw extends Table {
             'raw_id' => $raw_id,
             'quantity' => $quantity
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, &$product, $product_id, &$raw, $raw_id, $quantity) {
@@ -397,7 +401,7 @@ class ProductRaw extends Table {
             'raw_id' => $raw_id,
             'quantity' => $quantity
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert(&$product, $product_id, &$raw, $raw_id, $quantity) {
@@ -443,11 +447,11 @@ class ClientCard extends Table {
     }
     
     public function selectByClientId($client_id) {
-        return $this->DB->select($table, '*', ['client_id' => $client_id]);
+        return $this->DB->select($this->table, '*', ['client_id' => $client_id]);
     }
     
     public function selectByClientStatusId($client_status_id) {
-        return $this->DB->select($table, '*', ['client_status_id' => $client_status_id]);
+        return $this->DB->select($this->table, '*', ['client_status_id' => $client_status_id]);
     }
     
     public function insert(&$client, $client_id, &$client_status, $client_status_id) {
@@ -459,7 +463,7 @@ class ClientCard extends Table {
             'client_id' => $client_id,
             'client_status_id' => $client_status_id,
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, &$client, $client_id, &$client_status, $client_status_id) {
@@ -470,7 +474,7 @@ class ClientCard extends Table {
             'client_id' => $client_id,
             'client_status_id' => $client_status_id,
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert(&$client, $client_id, &$client_status, $client_status_id) {
@@ -492,11 +496,11 @@ class Discount extends Table {
     }
     
     public function selectByDiscountLevelId($discount_level_id) {
-        return $this->DB->select($table, '*', ['discount_level_id' => $discount_level_id]);
+        return $this->DB->select($this->table, '*', ['discount_level_id' => $discount_level_id]);
     }
     
     public function selectByProductId($product_id) {
-        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+        return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
     public function insert(&$product, $product_id, &$discount_level, $discount_level_id) {
@@ -508,7 +512,7 @@ class Discount extends Table {
             'product_id' => $product_id,
             'discount_level_id' => $discount_level_id,
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, &$product, $product_id, &$discount_level, $discount_level_id) {
@@ -519,7 +523,7 @@ class Discount extends Table {
             'product_id' => $product_id,
             'discount_level_id' => $discount_level_id,
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert(&$product, $product_id, &$discount_level, $discount_level_id) {
@@ -541,11 +545,11 @@ class EditionDiscount extends Table {
     }
     
     public function selectByEditionDiscountInfoId($edition_discount_info_id) {
-        return $this->DB->select($table, '*', ['edition_discount_info_id' => $edition_discount_info_id]);
+        return $this->DB->select($this->table, '*', ['edition_discount_info_id' => $edition_discount_info_id]);
     }
     
     public function selectByProductId($product_id) {
-        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+        return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
     public function insert(&$product, $product_id, &$edition_discount_info, $edition_discount_info_id) {
@@ -557,7 +561,7 @@ class EditionDiscount extends Table {
             'product_id' => $product_id,
             'edition_discount_info_id' => $edition_discount_info_id,
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, &$product, $product_id, &$edition_discount_info, $edition_discount_info_id) {
@@ -568,7 +572,7 @@ class EditionDiscount extends Table {
             'product_id' => $product_id,
             'edition_discount_info_id' => $edition_discount_info_id,
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert(&$product, $product_id, &$edition_discount_info, $edition_discount_info_id) {
@@ -591,11 +595,11 @@ class Production extends Table {
     }
     
     public function selectByWorkTypeId($work_type_id) {
-        return $this->DB->select($table, '*', ['work_type_id' => $work_type_id]);
+        return $this->DB->select($this->table, '*', ['work_type_id' => $work_type_id]);
     }
     
     public function selectByProductId($product_id) {
-        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+        return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
     public function insert(&$product, $product_id, &$work_type, $work_type_id, $spend_time) {
@@ -608,7 +612,7 @@ class Production extends Table {
             'work_type_id' => $work_type_id,
             'spend_time' => $spend_time
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, &$product, $product_id, &$work_type, $work_type_id, $spend_time) {
@@ -620,7 +624,7 @@ class Production extends Table {
             'work_type_id' => $work_type_id,
             'spend_time' => $spend_time
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert(&$product, $product_id, &$work_type, $work_type_id, $spend_time) {
@@ -644,11 +648,11 @@ class Distribution extends Table {
     }
     
     public function selectByDistributorId($distributor_id) {
-        return $this->DB->select($table, '*', ['distributor_id' => $distributor_id]);
+        return $this->DB->select($this->table, '*', ['distributor_id' => $distributor_id]);
     }
     
     public function selectByProductId($product_id) {
-        return $this->DB->select($table, '*', ['product_id' => $product_id]);
+        return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
     public function insert(&$product, $product_id, &$distributor, $distributor_id, $margin) {
@@ -661,7 +665,7 @@ class Distribution extends Table {
             'distributor_id' => $distributor_id,
             'margin' => $margin
         ];
-        return $this->DB->insert($table, $insert);
+        return $this->DB->insert($this->table, $insert);
     }
     
     public function update($id, &$product, $product_id, &$distributor, $distributor_id, $margin) {
@@ -673,7 +677,7 @@ class Distribution extends Table {
             'distributor_id' => $distributor_id,
             'margin' => $margin
         ];
-        return $this->DB->update($table, $insert, ['id' => $id]);
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
     protected function canInsert(&$product, $product_id, &$distributor, $distributor_id, $margin) {
