@@ -25,6 +25,47 @@ abstract class Table extends UnchangeableTable{
 }
 
 
+abstract class Person extends Table {
+  
+    public function insert($title, $fullname, $phone, $email) {
+        if (!$this->canInsert($title, $fullname, $phone, $email)) {
+            return false;
+        }
+        $insert = [
+            'id' => null,
+            'title' => $title,
+            'fullname' => $fullname,
+            'phone' => $phone,
+            'email' => $email    
+        ];
+        return $this->DB->insert($this->table, $insert);
+    }
+    
+    public function update($id, $title, $fullname, $phone, $email) {
+        if (!$this->canInsert($title, $fullname, $phone, $email)) {
+            return false;
+        }
+        $insert = [
+            'title' => $title,
+            'fullname' => $fullname,
+            'phone' => $phone,
+            'email' => $email    
+        ];
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
+    }
+    
+    protected function canInsert($title, $fullname, $phone, $email) {
+        if ($title == '' || $fullname == '' || $email == '' || $phone <= 0) {
+            return false;
+        }
+        if (empty($title) || empty($fullname) && empty($phone) || empty($email)) {
+            return false;
+        } 
+        return true;
+    }
+}  
+
+
 class OnlyTitle extends Table {
     
     public function insert($title) {
@@ -97,47 +138,6 @@ class WorkType extends Table {
         return !empty($title) && !empty($employee_rate) && $employee_rate > 0;
     }    
 }
-
-
-abstract class Person extends Table {
-  
-    public function insert($title, $fullname, $phone, $email) {
-        if (!$this->canInsert($title, $fullname, $phone, $email)) {
-            return false;
-        }
-        $insert = [
-            'id' => null,
-            'title' => $title,
-            'fullname' => $fullname,
-            'phone' => $phone,
-            'email' => $email    
-        ];
-        return $this->DB->insert($this->table, $insert);
-    }
-    
-    public function update($id, $title, $fullname, $phone, $email) {
-        if (!$this->canInsert($title, $fullname, $phone, $email)) {
-            return false;
-        }
-        $insert = [
-            'title' => $title,
-            'fullname' => $fullname,
-            'phone' => $phone,
-            'email' => $email    
-        ];
-        return $this->DB->update($this->table, $insert, ['id' => $id]);
-    }
-    
-    protected function canInsert($title, $fullname, $phone, $email) {
-        if ($title == '' || $fullname == '' || $email == '' || $phone <= 0) {
-            return false;
-        }
-        if (empty($title) || empty($fullname) && empty($phone) || empty($email)) {
-            return false;
-        } 
-        return true;
-    }
-}  
  
  
 class Client extends Person {
