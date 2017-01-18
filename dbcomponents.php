@@ -55,10 +55,10 @@ abstract class Person extends Table {
     }
     
     protected function canInsert($title, $fullname, $phone, $email) {
-        if ($title == '' || $fullname == '' || $email == '' || $phone <= 0) {
+        if ($title === '' || $fullname === '' || $email === '' || $phone < 0) {
             return false;
         }
-        if (empty($title) || empty($fullname) && empty($phone) || empty($email)) {
+        if (empty($title) && empty($fullname) || empty($phone) && empty($email)) {
             return false;
         } 
         return true;
@@ -66,7 +66,7 @@ abstract class Person extends Table {
 }  
 
 
-class OnlyTitle extends Table {
+abstract class OnlyTitle extends Table {
     
     public function insert($title) {
         if (!$this->canInsert($title)) {
@@ -334,7 +334,7 @@ class Supplies extends Table {
         return $this->DB->insert($this->table, $insert);
     }
     
-    public function update($id, &$product, $product_id, &$client, $client_id, $edition) {
+    public function update($id, &$raw, $raw_id, &$supplier, $supplier_id, $price) {
         if (!$this->canInsert($raw, $raw_id, $supplier, $supplier_id, $price)) {
             return false;
         }
@@ -348,7 +348,7 @@ class Supplies extends Table {
     
     protected function canInsert(&$raw, $raw_id, &$supplier, $supplier_id, $price) {
         return $raw->hasId($raw_id)
-            && $suppplier->hasId($supplier_id)
+            && $supplier->hasId($supplier_id)
             && $price >= 0;
     }
 }

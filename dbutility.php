@@ -2,7 +2,7 @@
 
 require_once('dblib.php');
 
-class TruncatePress extends Press {
+class FillPress extends Press {
     public function truncateAll() {
         
         $tables = [

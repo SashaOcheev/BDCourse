@@ -2,8 +2,7 @@
 
 require_once('dblib.php');
 require_once('debug.php');
+require_once('dbutility.php');
 
-
-$press = new Press();
-$press->addProduct('pillar');
-
+$t = new FillPress();
+$t->truncateAll();

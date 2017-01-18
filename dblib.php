@@ -17,6 +17,7 @@ class Press {
          $this->setComponents();
     }
     
+    
     protected function setComponents() {
         $this->action_time = new ActionTime($this->DB);
         $this->client = new Client($this->DB);
@@ -39,33 +40,40 @@ class Press {
         $this->work_type = new WorkType($this->DB);
     }
     
-    public function getAllProducts() {
-        return $this->product->select();
+    public function insertSupplies($raw_id, $product_id, $price) {
+        return $this->supplies->insert($this->raw, $raw_id, $this->supplier, $product_id, $price);
     }
     
-    public function addProduct($title) {
-        return $this->product->insert($title);
+    protected function GetPriceForRaw($raw_id) {
+        var_dump($this->orders->select());
     }
     
     protected $DB;
     
-    protected $action_time;
-	protected $client;
-	protected $client_card;
-	protected $client_status;
-	protected $discount;	 
-	protected $discount_level;
-	protected $distribution;
-	protected $distributor;
-	protected $edition_discount;
-	protected $edition_discount_info;
-	protected $margin;	
-	protected $orders;	
-	protected $product;	
-	protected $production;
-	protected $product_raw;
-	protected $raw;	  	 
-	protected $supplier;
-	protected $supplies;
-	protected $work_type;
+    public $action_time;
+	public $client;
+	public $client_card;
+	public $client_status;
+	public $discount;	 
+	public $discount_level;
+	public $distribution;
+	public $distributor;
+	public $edition_discount;
+	public $edition_discount_info;
+	public $margin;	
+	public $orders;	
+	public $product;	
+	public $production;
+	public $product_raw;
+	public $raw;	  	 
+	public $supplier;
+	public $supplies;
+	public $work_type;
+}
+
+class PressForUser extends Press {
+}
+
+class PressForEconomist {
+
 }
