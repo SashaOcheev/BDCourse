@@ -5,7 +5,7 @@ require_once('debug.php');
 require_once('dbutility.php');
 
 $t = new FillPress();
-//$t->fill();
+$t->fill();
 
 $DB = new PressForEconomist();
 echo $DB->getRawAndSupplyCost(1);

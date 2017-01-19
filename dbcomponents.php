@@ -583,32 +583,35 @@ class EditionDiscount extends Table {
         return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
-    public function insert(&$product, $product_id, &$edition_discount_info, $edition_discount_info_id) {
-        if (!$this->canInsert($product, $product_id, $edition_discount_info, $edition_discount_info_id)) {
+    public function insert(&$product, $product_id, &$edition_discount_info, $edition_discount_info_id, $value) {
+        if (!$this->canInsert($product, $product_id, $edition_discount_info, $edition_discount_info_id, $value)) {
             return false;
         }
         $insert = [
             'id' => null,
             'product_id' => $product_id,
             'edition_discount_info_id' => $edition_discount_info_id,
+            'value' => $value
         ];
         return $this->DB->insert($this->table, $insert);
     }
     
-    public function update($id, &$product, $product_id, &$edition_discount_info, $edition_discount_info_id) {
-        if (!$this->canInsert($product, $product_id, $edition_discount_info, $edition_discount_info_id)) {
+    public function update($id, &$product, $product_id, &$edition_discount_info, $edition_discount_info_id, $value) {
+        if (!$this->canInsert($product, $product_id, $edition_discount_info, $edition_discount_info_id, $value)) {
             return false;
         }
         $insert = [
             'product_id' => $product_id,
             'edition_discount_info_id' => $edition_discount_info_id,
+            'value' => $value
         ];
         return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
-    protected function canInsert(&$product, $product_id, &$edition_discount_info, $edition_discount_info_id) {
+    protected function canInsert(&$product, $product_id, &$edition_discount_info, $edition_discount_info_id, $value) {
         return $product->hasId($product_id)
-            && $edition_discount_info->hasId($edition_discount_info_id);
+            && $edition_discount_info->hasId($edition_discount_info_id)
+            && $value > 0 && $value <= 1;
     }
 }
 
@@ -686,35 +689,35 @@ class Distribution extends Table {
         return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
-    public function insert(&$product, $product_id, &$distributor, $distributor_id, $margin) {
-        if (!$this->canInsert($product, $product_id, $distributor, $distributor_id, $margin)) {
+    public function insert(&$product, $product_id, &$distributor, $distributor_id, $price) {
+        if (!$this->canInsert($product, $product_id, $distributor, $distributor_id, $price)) {
             return false;
         }
         $insert = [
             'id' => null,
             'product_id' => $product_id,
             'distributor_id' => $distributor_id,
-            'margin' => $margin
+            'price' => $price
         ];
         return $this->DB->insert($this->table, $insert);
     }
     
-    public function update($id, &$product, $product_id, &$distributor, $distributor_id, $margin) {
-        if (!$this->canInsert($product, $product_id, $distributor, $distributor_id, $margin)) {
+    public function update($id, &$product, $product_id, &$distributor, $distributor_id, $price) {
+        if (!$this->canInsert($product, $product_id, $distributor, $distributor_id, $price)) {
             return false;
         }
         $insert = [
             'product_id' => $product_id,
             'distributor_id' => $distributor_id,
-            'margin' => $margin
+            'price' => $price
         ];
         return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
-    protected function canInsert(&$product, $product_id, &$distributor, $distributor_id, $margin) {
+    protected function canInsert(&$product, $product_id, &$distributor, $distributor_id, $price) {
         return $product->hasId($product_id)
-            && $work_type->hasId($work_type_id)
-            && $margin >= 0;
+            && $distributor->hasId($distributor_id)
+            && $price >= 0;
     }
 }
 

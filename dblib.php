@@ -52,6 +52,38 @@ class Press {
         $this->production->insert($this->product, $product_id, $this->work_type, $work_type_id, $spend_time);
     }
     
+    public function insertMargin($product_id, $margin) {
+        $this->margin->insert($this->product, $product_id, $margin);
+    }
+    
+    public function insertDistribution($product_id, $distributor_id, $price) {
+        $this->distribution->insert($this->product, $product_id, $this->distributor, $distributor_id, $price);
+    }
+    
+    public function insertEditionDiscount($product_id, $values) {
+        $edition_discount_info = $this->edition_discount_info->select();
+        $count = count($values);
+        if ($count != count($edition_discount_info)) {
+            return false;
+        }
+        
+        foreach($values as $value) {
+            if ($value > 1.00 || $value <= 0.00) {
+                return false;
+            }
+        }
+        
+        for ($i = 0; $i < $count; ++$i) {
+            $this->edition_discount->insert(
+                $this->product,
+                $product_id,
+                $this->edition_discount_info,
+                $edition_discount_info[$i]['id'],
+                $values[$i]
+            );
+        }
+    }
+    
     protected function getWorkCost($product_id) {
         $costs = [];
         $productions = $this->production->selectByProductId($product_id);

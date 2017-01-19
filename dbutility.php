@@ -39,6 +39,10 @@ class FillPress extends Press {
         $this->fillProductRaw();
         $this->fillWorkType();
         $this->fillProduction();
+        $this->fillEditionDiscount();
+        $this->fillMargin();
+        $this->fillDistributor();
+        $this->fillDistribution();
     }
     
     public function fillProduct() {
@@ -93,6 +97,43 @@ class FillPress extends Press {
         $this->insertProduction(1, 3, 5320);
         $this->insertProduction(1, 4, 520);
         $this->insertProduction(1, 5, 35);
+    }
+    
+    public function fillEditionDiscount() {
+        $this->insertEditionDiscount(1, [
+            1,
+            0.99, 
+            0.9, 
+            0.85, 
+            0.75, 
+            0.67,
+            0.6, 
+            0.58, 
+            0.55, 
+            0.46, 
+            0.4, 
+            0.35,
+            0.31, 
+            0.29, 
+            0.27, 
+            0.22
+        ]);   
+    }
+    
+    public function fillMargin() {
+        $this->insertMargin(1, 0.3);
+    }
+    
+    public function fillDistributor() {
+        $this->distributor->insert('OP', null, null, 'op@mail.ru');
+        $this->distributor->insert('RA', null, null, 'ra@mail.ru');
+        $this->distributor->insert('PR', null, null, 'pr@mail.ru');
+    }
+    
+    public function fillDistribution() {
+        $this->insertDistribution(1, 1, 3540);
+        $this->insertDistribution(1, 2, 3600);
+        $this->insertDistribution(1, 3, 3660);
     }
     
     protected function truncateTable($table) {
