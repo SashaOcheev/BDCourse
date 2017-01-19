@@ -152,7 +152,8 @@ class WorkType extends Table {
         }
         $insert = [
             'id' => null,
-            'title' => $title
+            'title' => $title,
+            'employee_rate' => $employee_rate
         ];
         return $this->DB->insert($this->table, $insert);
     }
@@ -161,7 +162,10 @@ class WorkType extends Table {
         if (!$this->canInsert($title, $employee_rate)) {
             return false;
         }
-        $insert = ['title' => $title];
+        $insert = [
+            'title' => $title,
+            'employee_rate' => $employee_rate
+        ];
         return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     

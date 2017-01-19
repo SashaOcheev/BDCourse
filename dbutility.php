@@ -37,6 +37,8 @@ class FillPress extends Press {
         $this->fillSupplier();
         $this->fillSupplies();
         $this->fillProductRaw();
+        $this->fillWorkType();
+        $this->fillProduction();
     }
     
     public function fillProduct() {
@@ -75,6 +77,22 @@ class FillPress extends Press {
         $this->insertSupplies(3, 3, 50);
         $this->insertSupplies(4, 4, 0);
         $this->insertSupplies(5, 5, 100);
+    }
+    
+    public function fillWorkType() {
+        $this->work_type->insert('rivets nstalling' , 0.042);
+        $this->work_type->insert('galvazing arches cutting' , 0.042);
+        $this->work_type->insert('film printing' , 0.042);
+        $this->work_type->insert('lamination' , 0.042);
+        $this->work_type->insert('CC' , 0.042);
+    }
+    
+    public function fillProduction() {
+        $this->insertProduction(1, 1, 430);
+        $this->insertProduction(1, 2, 610);
+        $this->insertProduction(1, 3, 5320);
+        $this->insertProduction(1, 4, 520);
+        $this->insertProduction(1, 5, 35);
     }
     
     protected function truncateTable($table) {

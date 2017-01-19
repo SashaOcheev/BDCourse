@@ -48,7 +48,33 @@ class Press {
         return $this->product_raw->insert($this->product, $product_id, $this->raw, $raw_id, $quantity);
     }
     
-    public function getRawAndSupplyCost($product_id) {
+    public function insertProduction($product_id, $work_type_id, $spend_time) {
+        $this->production->insert($this->product, $product_id, $this->work_type, $work_type_id, $spend_time);
+    }
+    
+    protected function getWorkCost($product_id) {
+        $costs = [];
+        $productions = $this->production->selectByProductId($product_id);
+        if (empty($productions)) {
+            return false;
+        }
+        
+        foreach ($productions as &$production) {
+            $costs[$production['work_type_id']] = $production['spend_time'] * 1.0;
+        }
+        
+        foreach ($costs as $work_type_id => &$work_type) {
+           $price = $this->work_type->selectById($work_type_id);
+           if (empty($price)) {
+                return false;
+           } 
+           $work_type *= $price[0]['employee_rate'];
+        }
+        
+        return array_sum($costs);
+    }
+    
+    protected function getRawAndSupplyCost($product_id) {
          $costs = [];
          $product_raws = $this->product_raw->selectByProductId($product_id);;
          foreach($product_raws as &$product_raw) {
@@ -112,6 +138,12 @@ class PressForUser extends Press {
 }
 
 class PressForEconomist extends Press {
+    public function getRawAndSupplyCost($product_id) {
+        return Press::getRawAndSupplyCost($product_id);
+    }
     
+    public function getWorkCost($product_id) {
+        return Press::getWorkCost($product_id);
+    }
 }
 

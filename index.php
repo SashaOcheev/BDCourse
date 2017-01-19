@@ -7,5 +7,8 @@ require_once('dbutility.php');
 $t = new FillPress();
 //$t->fill();
 
-$DB = new Press();
-var_dump($DB->getRawAndSupplyCost(1));
+$DB = new PressForEconomist();
+echo $DB->getRawAndSupplyCost(1);
+echo '<br>';
+echo $DB->getWorkCost(1);
+echo '<br>';
