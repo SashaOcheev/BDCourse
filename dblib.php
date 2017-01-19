@@ -172,7 +172,37 @@ class Press {
          return array_sum($costs);
     }
     
-
+    protected function getDistributionPrice($distribution_id) {
+        return $this->distribution->selectById($distribution_id)[0]['price'] * 1.0;
+    }
+    
+    protected function getOrderCostWithoutMargin($order_id) {
+        $order = $this->orders->selectById($order_id);
+        $distribution_id = $order[0]['distributotion_id'];
+        $product_id = $order[0]['product_id'];
+        $edition = $order[0]['edition'];
+        return ($this->getRawAndSupplyCost($product_id) + $this->getWorkCost($product_id)) * $edition
+            + $this->getDistributionPrice($distribution_id);
+    }
+    
+    public function getOrderCost($order_id) {
+        $order = $this->orders->selectById($order_id);
+        $distribution_id = $order[0]['distributotion_id'];
+        $product_id = $order[0]['product_id'];
+        $edition = $order[0]['edition'];
+        $levels = $this->edition_discount_info->select();
+        $level;
+        foreach ($levels as &$lev) {
+            if ($product_id && $lev['bottom'] * 1.0 <= $edition && $lev['top'] * 1.0 >= $edition) {
+                $level = $lev['id'] * 1;
+                break;
+            }
+        }
+        $editions = $this->edition_discount->selectByProductId($product_id);
+        $edition_discount = $editions[$level]['value'] * 1.0;
+        $margin = $this->margin->selectByProductId($product_id)[0]['self'] * 1.0;
+        return $this->getOrderCostWithoutMargin($order_id) * (1.0 + $edition_discount * $margin);
+    }
     
     protected $DB;
     
@@ -197,7 +227,7 @@ class Press {
 	public $work_type;
 }
 
-class PressForUser extends Press {
+class PressForClient extends Press {
     
 }
 
@@ -208,6 +238,22 @@ class PressForEconomist extends Press {
     
     public function getWorkCost($product_id) {
         return Press::getWorkCost($product_id);
+    }
+    
+    public function getDistributionPrice($distribution_id) {
+        return Press::getDistributionPrice($distribution_id);
+    }
+    
+    public function getOrderCostWithoutMargin($order_id) {
+        return Press::getOrderCostWithoutMargin($order_id);
+    }
+    
+    public  function getOrderCost($order_id) {
+        return Press::getOrderCost($order_id);
+    }
+    
+    public function getMargin($order_id) {
+        return $this->getOrderCost($order_id) - $this->getOrderCostWithoutMargin($order_id);
     }
 }
 
