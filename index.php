@@ -5,4 +5,7 @@ require_once('debug.php');
 require_once('dbutility.php');
 
 $t = new FillPress();
-$t->truncateAll();
+//$t->fill();
+
+$DB = new Press();
+var_dump($DB->getRawAndSupplyCost(1));

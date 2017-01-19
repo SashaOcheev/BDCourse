@@ -5,6 +5,10 @@ abstract class UnchangeableTable {
         $this->DB =& $DB;
     }
     
+    public function selectById($id) {
+        return $this->DB->select($this->table, '*', ['id' => $id]);
+    }
+    
     public function select() {
         return $this->DB->select($this->table, '*');
     }
@@ -101,10 +105,37 @@ class Product extends OnlyTitle {
 }
 
 
-class Raw extends OnlyTitle {
+class Raw extends Table {
     public function __construct(&$DB) {
-        OnlyTitle::__construct($DB);
+        Table::__construct($DB);
         $this->table = 'raw';
+    }
+    
+    public function insert($title, $price) {
+        if (!$this->canInsert($title, $price)) {
+            return false;
+        }
+        $insert = [
+            'id' => null,
+            'title' => $title,
+            'price' => $price
+        ];
+        return $this->DB->insert($this->table, $insert);
+    }
+    
+    public function update($id, $title, $employee_rate) {
+        if (!$this->canInsert($title, $price)) {
+            return false;
+        }
+        $insert = [
+            'title' => $title,
+            'price' => $price
+        ];
+        return $this->DB->update($this->table, $insert, ['id' => $id]);
+    }
+    
+    protected function canInsert($title, $price) {
+        return !empty($title) && !empty($price) && $price > 0;
     }
 }
 
@@ -371,11 +402,11 @@ class ProductRaw extends Table {
         return $this->DB->select($this->table, '*', ['raw_id' => $raw_id]);
     }
     
-    public function selectByProductId($product) {
+    public function selectByProductId($product_id) {
         return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
-    public function insert(&$raw, $raw_id, &$supplier, $supplier_id, $price) {
+    public function insert(&$product, $product_id, &$raw, $raw_id, $quantity) {
         if (!$this->canInsert($product, $product_id, $raw, $raw_id, $quantity)) {
             return false;
         }

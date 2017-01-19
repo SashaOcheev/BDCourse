@@ -44,8 +44,44 @@ class Press {
         return $this->supplies->insert($this->raw, $raw_id, $this->supplier, $product_id, $price);
     }
     
-    protected function GetPriceForRaw($raw_id) {
-        var_dump($this->orders->select());
+    public function insertProductRaw($product_id, $raw_id, $quantity) {
+        return $this->product_raw->insert($this->product, $product_id, $this->raw, $raw_id, $quantity);
+    }
+    
+    public function getRawAndSupplyCost($product_id) {
+         $costs = [];
+         $product_raws = $this->product_raw->selectByProductId($product_id);;
+         foreach($product_raws as &$product_raw) {
+            $costs[$product_raw['raw_id']] = $product_raw['quantity'] * 1.0;
+         }
+         
+         foreach($costs as $raw_id => &$quant) {
+            $one = $this->raw->selectById($raw_id);
+            if (!$one) {
+                return false;
+            }
+            $quant *= $one[0]['price'];
+         }  
+              
+         foreach($costs as $raw_id => &$quant)
+         {
+            $price = $this->supplies->selectByRawId($raw_id);
+            if ($price === false)
+            {
+                return false;
+            }
+            
+            uasort($price, function($k1, $k2) {
+                if ($k1['price'] == $k2['price']) {
+                    return 0;
+                }
+                return ($k1['price'] < $k2['price'] ? -1 : 1);
+            });
+            
+            $quant += $price[0]['price'];
+         }
+         
+         return array_sum($costs);
     }
     
     protected $DB;
@@ -72,8 +108,10 @@ class Press {
 }
 
 class PressForUser extends Press {
+    
 }
 
-class PressForEconomist {
-
+class PressForEconomist extends Press {
+    
 }
+
