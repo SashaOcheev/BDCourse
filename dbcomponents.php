@@ -300,37 +300,44 @@ class Orders extends Table {
         return $this->DB->select($this->table, '*', ['client_id' => $client_id]);
     }
     
-    public function insert(&$product, $product_id, &$client, $client_id, &$edition_discount_info, $edition) {
-        if (!$this->canInsert($product, $product_id, $client, $client_id, $edition_discount_info, $edition)) {
+    public function selectByDistributionId($distribution_id) {
+        return $this->DB->select($this->table, '*', ['distribution_id' => $distribution_id]);
+    }
+    
+    public function insert(&$product, $product_id, &$client, $client_id, &$distribution, $distribution_id, &$edition_discount_info, $edition) {
+        if (!$this->canInsert($product, $product_id, $client, $client_id, $distribution, $distribution_id, $edition_discount_info, $edition)) {
             return false;
         }
         $insert = [
             'id' => null,
             'product_id' => $product_id,
             'client_id' => $client_id,
+            'distributotion_id' => $distribution_id,
             'edition' => $edition
         ];
         return $this->DB->insert($this->table, $insert);
     }
     
-    public function update($id, &$product, $product_id, &$client, $client_id, &$edition_discount_info, $edition) {
-        if (!$this->canInsert($product, $product_id, $client, $client_id, $edition_discount_info, $edition)) {
+    public function update($id, &$product, $product_id, &$client, $client_id, &$distribution, $distribution_id, &$edition_discount_info, $edition) {
+        if (!$this->canInsert($product, $product_id, $client, $client_id, $distribution, $distribution_id, $edition_discount_info, $edition)) {
             return false;
         }
         $insert = [
             'product_id' => $product_id,
             'client_id' => $client_id,
+            'distributotion_id' => $distribution_id,
             'edition' => $edition
         ];
         return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
-    protected function canInsert(&$product, $product_id, &$client, $client_id, &$edition_discount_info, $edition) {
+    protected function canInsert(&$product, $product_id, &$client, $client_id, &$distribution, $distribution_id, &$edition_discount_info, $edition) {
         $edition_discount_levels = $edition_discount_info->select();
         return $product->hasId($product_id)
             && $client->hasId($client_id)
-            && $edition >= $this->edition_discount_levels[0]['top']
-            && $edition <= end($this->edition_discount_levels)['bottom'];
+            && $distribution->hasId($distribution_id)
+            && $edition >= $edition_discount_levels[0]['top']
+            && $edition <= end($edition_discount_levels)['bottom'];
     }
 }
 
@@ -492,7 +499,7 @@ class ClientCard extends Table {
         $insert = [
             'id' => null,
             'client_id' => $client_id,
-            'client_status_id' => $client_status_id,
+            'client_satus_id' => $client_status_id,
         ];
         return $this->DB->insert($this->table, $insert);
     }
@@ -503,7 +510,7 @@ class ClientCard extends Table {
         }
         $insert = [
             'client_id' => $client_id,
-            'client_status_id' => $client_status_id,
+            'client_satus_id' => $client_status_id,
         ];
         return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
@@ -534,32 +541,35 @@ class Discount extends Table {
         return $this->DB->select($this->table, '*', ['product_id' => $product_id]);
     }
     
-    public function insert(&$product, $product_id, &$discount_level, $discount_level_id) {
-        if (!$this->canInsert($product, $product_id, $discount_level, $discount_level_id)) {
+    public function insert(&$product, $product_id, &$discount_level, $discount_level_id, $value) {
+        if (!$this->canInsert($product, $product_id, $discount_level, $discount_level_id, $value)) {
             return false;
         }
         $insert = [
             'id' => null,
             'product_id' => $product_id,
             'discount_level_id' => $discount_level_id,
+            'value' => $value
         ];
         return $this->DB->insert($this->table, $insert);
     }
     
-    public function update($id, &$product, $product_id, &$discount_level, $discount_level_id) {
-        if (!$this->canInsert($product, $product_id, $discount_level, $discount_level_id)) {
+    public function update($id, &$product, $product_id, &$discount_level, $discount_level_id, $value) {
+        if (!$this->canInsert($product, $product_id, $discount_level, $discount_level_id, $value)) {
             return false;
         }
         $insert = [
             'product_id' => $product_id,
             'discount_level_id' => $discount_level_id,
+            'value' =>$value
         ];
         return $this->DB->update($this->table, $insert, ['id' => $id]);
     }
     
-    protected function canInsert(&$product, $product_id, &$discount_level, $discount_level_id) {
+    protected function canInsert(&$product, $product_id, &$discount_level, $discount_level_id,$value) {
         return $product->hasId($product_id)
-            && $discount_level->hasId($discount_level_id);
+            && $discount_level->hasId($discount_level_id)
+            && $value >= 0 && $value <= 100;
     }
 }
 

@@ -84,6 +84,36 @@ class Press {
         }
     }
     
+    public function insertClientCard($client_id, $client_status_id) {
+        $this->client_card->insert($this->client, $client_id, $this->client_status, $client_status_id);
+    }
+    
+    public function insertOrder($product_id, $client_id, $distribution_id, $edition) {
+        $this->orders->insert(
+            $this->product,
+            $client_id,
+            $this->client,
+            $client_id,
+            $this->distribution,
+            $distribution_id,
+            $this->edition_discount_info,
+            $edition
+        );
+    }
+    
+    public function insertDiscount($product_id, $values) {
+        $count = count($this->discount_level->select());
+        if ($count != count($values)) {
+            return false;
+        }
+        
+        $i = 0;
+        foreach ($values as $value) {
+            $this->discount->insert($this->product, $product_id, $this->discount_level, $i + 1, $value);
+            ++$i;
+        }
+    }
+    
     protected function getWorkCost($product_id) {
         $costs = [];
         $productions = $this->production->selectByProductId($product_id);
@@ -141,6 +171,8 @@ class Press {
          
          return array_sum($costs);
     }
+    
+
     
     protected $DB;
     

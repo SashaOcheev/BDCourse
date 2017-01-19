@@ -43,6 +43,10 @@ class FillPress extends Press {
         $this->fillMargin();
         $this->fillDistributor();
         $this->fillDistribution();
+        $this->fillClient();
+        $this->fillClientCard();
+        $this->fillOrder();
+        $this->fillDiscount();
     }
     
     public function fillProduct() {
@@ -99,6 +103,14 @@ class FillPress extends Press {
         $this->insertProduction(1, 5, 35);
     }
     
+    public function fillClient() {
+        $this->client->insert('Big Magazine', null, null, 'BigMagazine@mail.ru');
+    }
+    
+    public function fillClientCard() {
+        $this->insertClientCard(1, 1);
+    }
+    
     public function fillEditionDiscount() {
         $this->insertEditionDiscount(1, [
             1,
@@ -120,6 +132,10 @@ class FillPress extends Press {
         ]);   
     }
     
+    public function fillOrder() {
+        $this->insertOrder(1, 1, 1, 10000);
+    }
+    
     public function fillMargin() {
         $this->insertMargin(1, 0.3);
     }
@@ -134,6 +150,10 @@ class FillPress extends Press {
         $this->insertDistribution(1, 1, 3540);
         $this->insertDistribution(1, 2, 3600);
         $this->insertDistribution(1, 3, 3660);
+    }
+    
+    public function fillDiscount() {
+        $this->insertDiscount(1, [5, 7, 25, 30]);
     }
     
     protected function truncateTable($table) {
